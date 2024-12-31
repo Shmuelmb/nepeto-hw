@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, DateTime, Float, ForeignKey, Integer, JSON, String, func
+    Column, Integer,  String
 )
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -17,11 +17,16 @@ class User(Base):
 
 
 engine = create_engine(
-    'postgresql://root:1234@localhost:5432/users', echo=True)
+    'postgresql://root:1234@localhost:5432/users', echo=False)
 Base.metadata.create_all(engine, checkfirst=True)
 
 Session = sessionmaker(bind=engine)
 
 session = Session()
-session.add(User(name='wendy', fullname='Wendy Williams', nickname='windy'))
-session.commit()
+
+try:
+    session.add(User(id=10, name='shmuel',
+                     fullname='Wendy Williams', nickname='windy'))
+    session.commit()
+except Exception as e:
+    print(e)

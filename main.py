@@ -12,9 +12,7 @@ Base = declarative_base()
 
 class MarterTrackerProductHistory(Base):
     __tablename__ = 'MarterTrackerProductHistory'
-
     id = Column(Integer, primary_key=True, autoincrement=True)
-
     date = Column(DateTime, nullable=False, default=func.now(), index=True)
     item_id = Column(String, ForeignKey(
         'MarterTrackerProduct.item_id'), index=True)
@@ -63,6 +61,9 @@ class MarterTrackerProductHistory(Base):
     # badge_x_amount_in_cart = Column(Integer)
     """
 
+    def __str__(self):
+        return f'{self.item_id} - {self.date}'
+
 
 class MarterTrackerProduct(Base):
     __tablename__ = 'MarterTrackerProduct'
@@ -109,14 +110,20 @@ def create_history_records(response_data, item_id):
     return history_records
 
 
-ids = ['46480251', '3', '4', '5', '6', '7', '8', '9']
-engine = create_engine('postgresql://root:1234@localhost:5432/test', echo=True)
+ids = ['46480251 ', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+engine = create_engine(
+    'postgresql://root:1234@localhost:5432/test', echo=False)
 Base.metadata.create_all(engine, checkfirst=True)
 Session = sessionmaker(bind=engine)
 session = Session()
 for id in ids:
-    product = MarterTrackerProduct(item_id=id)
-    session.add(product)
+    try:
+        with Session() as session:
+            product = MarterTrackerProduct(item_id=id.strip())
+            session.add(product)
+            session.commit()
+    except Exception:
+        print(f'{id.strip()} already exists')
 
 
 params = {'low_price_history': 1, 'stats': 1000}
@@ -127,7 +134,9 @@ for id in ids:
     response = json.loads(res.text)
     history_records = create_history_records(response, id)
     for record in history_records:
-        session.add(record)
-
-
-session.commit()
+        try:
+            with Session() as session:
+                session.add(record)
+                session.commit()
+        except Exception:
+            print(f'{record.item_id} already exists')
