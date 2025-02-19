@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: test
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "root", "-d", "test", "-h", "db"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: python-app
+    depends_on:
+      db:
+        condition: service_healthy

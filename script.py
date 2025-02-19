@@ -112,7 +112,7 @@ def create_history_records(response_data, item_id):
 
 ids = ['46480251 ', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 engine = create_engine(
-    'postgresql://root:1234@localhost:5432/test', echo=False)
+    'postgresql://root:1234@db:5432/test', echo=False)
 Base.metadata.create_all(engine, checkfirst=True)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -139,4 +139,4 @@ for id in ids:
                 session.add(record)
                 session.commit()
         except Exception:
-            print(f'{record.item_id} already exists')
+            print(f'This record for {record.item_id} already exists')
